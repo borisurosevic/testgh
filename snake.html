@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Gamedev Canvas Workshop</title>
+        <style>
+            * { padding: 0; margin: 0; }
+            canvas { background: #eee; display: block; margin: auto; margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <canvas id="myCanvas" width="480" height="320"></canvas>
+    </body>
+</html>
+
+<script>
+    let canvas = document.getElementById("myCanvas");
+    let ctx = canvas.getContext("2d");
+
+
+    let snakeX = 30;
+    let snakeY = 60;
+    let snakePositions = [];
+    snakePositions.push([30, 60], [40, 60], [50, 60], [60, 60]);
+
+    let pixel = 10;
+    let move = 10;
+
+    let foodX = getFoodX();
+    let foodY = getFoodY();
+    let eatFood = false;
+
+    let rightPressed = false;
+    let leftPreessed = false;
+    let upPressed = false;
+    let downPressed = false;
+
+    let direction = 'right';
+
+    function drawSnake(){
+
+        for( let i = 0; i < snakePositions.length; i++ ){
+            snakeX = snakePositions[i][0];
+            snakeY = snakePositions[i][1];
+
+            if ( snakeX > canvas.width-pixel ){
+                snakeX = 0;
+            }
+            if( snakeX < 0 ){
+                snakeX = canvas.width-pixel;
+            }
+            if( snakeY > canvas.height-pixel ){
+                snakeY = 0;
+            }
+            if( snakeY < 0 ){
+                snakeY = canvas.height-pixel;
+            }
+
+            snakePositions[i][0] = snakeX;
+            snakePositions[i][1] = snakeY;
+
+            ctx.beginPath();
+            ctx.rect(snakeX, snakeY, pixel, pixel);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        //if( snakeX%pixel == 0 && snakeY%pixel == 0 ){
+            if( rightPressed && direction != 'left' ){
+                direction = 'right';
+            }else if( leftPreessed && direction != 'right' ){
+                direction = 'left';
+            }else if( upPressed && direction != 'down' ){
+                direction = 'up';
+            }else if( downPressed && direction != 'up' ){
+                direction = 'down';
+            }
+        //}
+
+        switch(direction){
+            case 'right':
+                snakeX += move;
+                break;
+            case 'left':
+                snakeX -= move;
+                break;
+            case 'up':
+                snakeY -= move;
+                break;
+            case 'down':
+                snakeY += move;
+                break;
+        }
+
+        for( let i = 0; i < snakePositions.length; i++ ){
+            if(snakePositions[i][0] == snakeX && snakePositions[i][1] == snakeY){
+                alert();
+            }
+        }
+
+        snakePositions.push([snakeX, snakeY]);
+        if( !eatFood ){
+            snakePositions.shift();
+        }
+        eatFood = false;
+    }
+
+    function drawFood(){
+        last_element = snakePositions.length-1;
+        snakeX = snakePositions[last_element][0]
+        snakeY = snakePositions[last_element][1];
+
+        if( snakeX == foodX && snakeY == foodY ){
+            foodX = getFoodX();
+            foodY = getFoodY();
+
+            eatFood = true;
+        }
+
+        ctx.beginPath();
+        ctx.rect(foodX, foodY, pixel, pixel);
+        ctx.fillStyle = "blue";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function draw(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawSnake();
+        drawFood();
+
+        //requestAnimationFrame(draw);
+        setTimeout(function(){ draw(); }, 150);
+    }
+
+
+    function getFoodX(){
+        let rand = Math.random();
+        let foodX = Math.floor(rand * canvas.width) - Math.floor(rand * canvas.width)%pixel;
+
+        return foodX;
+    }
+
+    function getFoodY(){
+        let rand = Math.random();
+        let foodY = Math.floor(rand * canvas.height) - Math.floor(rand * canvas.height)%pixel;
+
+        return foodY;
+    }
+
+    document.addEventListener("keydown", keyDownHandler, false);
+
+    function keyDownHandler(e){
+        if(e.key == "Right" || e.key == "ArrowRight" ){
+            rightPressed = true;
+
+            leftPreessed = false;
+            upPressed = false;
+            downPressed = false;
+        }else if( e.key == "Left" || e.key == "ArrowLeft" ){
+            leftPreessed = true;
+
+            rightPressed = false;
+            upPressed = false;
+            downPressed = false;
+        }else if( e.key == "Up" || e.key == "ArrowUp" ){
+            upPressed = true;
+
+            rightPressed = false;
+            leftPreessed = false;
+            downPressed = false;
+        }else if( e.key == "Down" || e.key == "ArrowDown" ){
+            downPressed = true;
+
+            rightPressed = false;
+            leftPreessed = false;
+            upPressed = false;
+        }
+    }
+
+    drawFood();
+    draw();
+    
+</script>
