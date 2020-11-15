@@ -17,11 +17,8 @@
     let canvas = document.getElementById("myCanvas");
     let ctx = canvas.getContext("2d");
 
-
-    let snakeX = 30;
-    let snakeY = 60;
-    let snakePositions = [];
-    snakePositions.push([30, 60], [40, 60], [50, 60], [60, 60]);
+    //let snakePositions = new Array([30, 60], [40, 60], [50, 60], [60, 60], [70,60], [80,60], [90,60], [100,60], [110,60], [120,60], [130,60], [140,60], [150,60], [160,60], [170,60], [180,60]);
+    let snakePositions = new Array([30, 60], [40, 60], [50, 60]);
 
     let pixel = 10;
     let move = 10;
@@ -30,12 +27,12 @@
     let foodY = getFoodY();
     let eatFood = false;
 
-    let rightPressed = false;
-    let leftPreessed = false;
-    let upPressed = false;
-    let downPressed = false;
-
     let direction = 'right';
+    let pressedKeys = new Array();
+    let pressed = 'rightPressed';
+
+    let score = 0;
+    let game_over = false;
 
     function drawSnake(){
 
@@ -66,17 +63,18 @@
             ctx.closePath();
         }
 
-        //if( snakeX%pixel == 0 && snakeY%pixel == 0 ){
-            if( rightPressed && direction != 'left' ){
-                direction = 'right';
-            }else if( leftPreessed && direction != 'right' ){
-                direction = 'left';
-            }else if( upPressed && direction != 'down' ){
-                direction = 'up';
-            }else if( downPressed && direction != 'up' ){
-                direction = 'down';
-            }
-        //}
+        pressed = pressedKeys.length == 0 ? pressed : pressedKeys[0];
+        pressedKeys.shift()
+
+        if( pressed == 'rightPressed' && direction != 'left' ){
+            direction = 'right';
+        }else if( pressed == 'leftPressed' && direction != 'right' ){
+            direction = 'left';
+        }else if( pressed == 'upPressed' && direction != 'down' ){
+            direction = 'up';
+        }else if( pressed == 'downPressed' && direction != 'up' ){
+            direction = 'down';
+        }
 
         switch(direction){
             case 'right':
@@ -95,15 +93,20 @@
 
         for( let i = 0; i < snakePositions.length; i++ ){
             if(snakePositions[i][0] == snakeX && snakePositions[i][1] == snakeY){
-                alert();
+                alert('GAME OVER');
+                game_over = true;
             }
         }
 
-        snakePositions.push([snakeX, snakeY]);
-        if( !eatFood ){
-            snakePositions.shift();
+        if( game_over ){
+            resetGame();
+        }else{
+            snakePositions.push([snakeX, snakeY]);
+            if( !eatFood ){
+                snakePositions.shift();
+            }
+            eatFood = false;
         }
-        eatFood = false;
     }
 
     function drawFood(){
@@ -111,11 +114,18 @@
         snakeX = snakePositions[last_element][0]
         snakeY = snakePositions[last_element][1];
 
+
+
+// HRANA DA NE BUDE U TELU ZMIJE
+
+
+
         if( snakeX == foodX && snakeY == foodY ){
             foodX = getFoodX();
             foodY = getFoodY();
 
             eatFood = true;
+            score++;
         }
 
         ctx.beginPath();
@@ -125,14 +135,21 @@
         ctx.closePath();
     }
 
+    function drawScore(){
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Score: " + score, 8, 20);
+    }
+
     function draw(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         drawSnake();
         drawFood();
+        drawScore();
 
         //requestAnimationFrame(draw);
-        setTimeout(function(){ draw(); }, 150);
+        setTimeout(function(){ draw(); }, 125);
     }
 
 
@@ -150,37 +167,37 @@
         return foodY;
     }
 
+    function resetGame(){
+        pressedKeys.length = 0;
+        snakePositions.length = 0;
+        snakePositions = [[30, 60], [40, 60], [50, 60]];
+        score = 0;
+        game_over = false;
+        pressed = 'rightPressed';
+    }
+
     document.addEventListener("keydown", keyDownHandler, false);
 
     function keyDownHandler(e){
-        if(e.key == "Right" || e.key == "ArrowRight" ){
-            rightPressed = true;
-
-            leftPreessed = false;
-            upPressed = false;
-            downPressed = false;
+        if( !game_over && (e.key == "Right" || e.key == "ArrowRight") ){
+            if( pressedKeys[pressedKeys.length-1] != 'rightPressed' && pressedKeys[pressedKeys.length-1] != 'leftPressed' ){
+                pressedKeys.push('rightPressed');
+            }
         }else if( e.key == "Left" || e.key == "ArrowLeft" ){
-            leftPreessed = true;
-
-            rightPressed = false;
-            upPressed = false;
-            downPressed = false;
+            if( pressedKeys[pressedKeys.length-1] != 'leftPressed' && pressedKeys[pressedKeys.length-1] != 'rightPressed' ){
+                pressedKeys.push('leftPressed');
+            }
         }else if( e.key == "Up" || e.key == "ArrowUp" ){
-            upPressed = true;
-
-            rightPressed = false;
-            leftPreessed = false;
-            downPressed = false;
+            if( pressedKeys[pressedKeys.length-1] != 'upPressed' && pressedKeys[pressedKeys.length-1] != 'downPressed' ){
+                pressedKeys.push('upPressed');
+            }
         }else if( e.key == "Down" || e.key == "ArrowDown" ){
-            downPressed = true;
-
-            rightPressed = false;
-            leftPreessed = false;
-            upPressed = false;
+            if( pressedKeys[pressedKeys.length-1] != 'downPressed' && pressedKeys[pressedKeys.length-1] != 'upPressed' ){
+                pressedKeys.push('downPressed');
+            }
         }
     }
 
-    drawFood();
     draw();
     
 </script>
